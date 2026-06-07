@@ -16,10 +16,9 @@
  * "Smart Money's share of total market OI" — see dashboard for the join.
  */
 import 'dotenv/config';
-import axios from 'axios';
 import { storage } from '../storage';
 import { getOpenInterestBatch } from '../binance-open-interest';
-import { preflightBinanceFapi } from '../binance-rate-limit';
+import { binanceHttp, preflightBinanceFapi } from '../binance-rate-limit';
 import { installGracefulShutdown } from '../cron-utils';
 
 const POOL_MAX    = parseInt(process.env.OI_POOL_MAX    || '0', 10);
@@ -28,7 +27,7 @@ const SHARD_TOTAL = Math.max(1, parseInt(process.env.OI_SHARD_TOTAL || '1', 10))
 
 async function getAllUsdtPerpetuals(): Promise<string[]> {
   try {
-    const exInfo = await axios.get(
+    const exInfo = await binanceHttp.get(
       'https://fapi.binance.com/fapi/v1/exchangeInfo',
       { timeout: 10_000 }
     );

@@ -19,10 +19,9 @@
  *   - Sharding usually unnecessary for top-trader (fapi is faster than web bapi)
  */
 import 'dotenv/config';
-import axios from 'axios';
 import { storage } from '../storage';
 import { getTopTraderSnapshotsBatch, type TopTraderPeriod } from '../binance-top-trader';
-import { preflightBinanceFapi } from '../binance-rate-limit';
+import { binanceHttp, preflightBinanceFapi } from '../binance-rate-limit';
 import { installGracefulShutdown } from '../cron-utils';
 
 const POOL_MAX    = parseInt(process.env.TOP_TRADER_POOL_MAX    || '0', 10);
@@ -38,7 +37,7 @@ function parsePeriod(arg: string | undefined): TopTraderPeriod {
 
 async function getAllUsdtPerpetuals(): Promise<string[]> {
   try {
-    const exInfo = await axios.get(
+    const exInfo = await binanceHttp.get(
       'https://fapi.binance.com/fapi/v1/exchangeInfo',
       { timeout: 10_000 }
     );

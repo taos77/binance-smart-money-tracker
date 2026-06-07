@@ -138,6 +138,29 @@ import axios from 'axios';
 import https from 'node:https';
 import http from 'node:http';
 
+function getBinanceProxyConfig(): any {
+  const raw = process.env.BINANCE_PROXY;
+  if (!raw) return undefined;
+
+  try {
+    const url = new URL(raw);
+    const protocol = url.protocol.replace(':', '');
+    if (protocol !== 'http' && protocol !== 'https') {
+      console.warn(`[binance-proxy] unsupported protocol: ${url.protocol}`);
+      return undefined;
+    }
+
+    return {
+      protocol,
+      host: url.hostname,
+      port: Number(url.port || (protocol === 'https' ? 443 : 80)),
+    };
+  } catch {
+    console.warn(`[binance-proxy] invalid BINANCE_PROXY: ${raw}`);
+    return undefined;
+  }
+}
+
 /**
  * Shared axios instance with HTTP keep-alive. Every client in this repo
  * (smart-money, top-trader, oi, ticker) should import { binanceHttp } from
@@ -152,6 +175,7 @@ import http from 'node:http';
 export const binanceHttp = axios.create({
   httpsAgent: new https.Agent({ keepAlive: true, maxSockets: 8, maxFreeSockets: 4 }),
   httpAgent: new http.Agent({ keepAlive: true, maxSockets: 8, maxFreeSockets: 4 }),
+  proxy: getBinanceProxyConfig(),
 });
 
 /**

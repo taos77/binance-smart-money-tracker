@@ -25,10 +25,9 @@
  *       cron B: `37 * * * *` env SMART_MONEY_SHARD_INDEX=1 SMART_MONEY_SHARD_TOTAL=2
  */
 import 'dotenv/config';
-import axios from 'axios';
 import { storage } from '../storage';
 import { getSmartMoneyOverviewBatch } from '../binance-smart-money';
-import { preflightBinanceFapi } from '../binance-rate-limit';
+import { binanceHttp, preflightBinanceFapi } from '../binance-rate-limit';
 import { installGracefulShutdown } from '../cron-utils';
 
 const POOL_MAX    = parseInt(process.env.SMART_MONEY_POOL_MAX    || '0', 10); // 0 = unlimited
@@ -40,7 +39,7 @@ const JITTER_MS = 3_000;
 
 async function getAllUsdtPerpetuals(): Promise<string[]> {
   try {
-    const exInfo = await axios.get(
+    const exInfo = await binanceHttp.get(
       'https://fapi.binance.com/fapi/v1/exchangeInfo',
       { timeout: 10_000 }
     );
